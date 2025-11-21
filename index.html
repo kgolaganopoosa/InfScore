@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>InfScore - Social Media Totalizer</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* Custom Styles */
+        :root {
+            --bs-blue: #0d6efd;
+            --bs-black: #212529;
+            --bs-white: #ffffff;
+        }
+
+        body {
+            background-color: var(--bs-white);
+            font-family: 'Orbitron', sans-serif; /* Digital Font */
+            color: var(--bs-black);
+        }
+
+        .navbar-brand, .nav-link, h1, h2 {
+            font-family: 'Orbitron', sans-serif;
+            color: var(--bs-black) !important;
+        }
+
+        .btn-rounded {
+            border-radius: 50px; /* Rounded Buttons */
+            background-color: var(--bs-blue);
+            border-color: var(--bs-blue);
+        }
+
+        .btn-rounded:hover {
+            background-color: #0b5ed7;
+            border-color: #0b5ed7;
+        }
+
+        .card {
+            border: none;
+            box-shadow: 0 4px 8px rgba(0,0,0,.1);
+        }
+
+        .profile-img {
+            width: 150px;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 50%;
+            border: 4px solid var(--bs-blue);
+            margin-bottom: 20px;
+        }
+
+        .total-box {
+            background-color: var(--bs-blue);
+            color: var(--bs-white);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom shadow-sm">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <span style="font-size: 1.5em; color: var(--bs-blue);">&#9733;</span> 
+                InfScore
+            </a>
+        </div>
+    </nav>
+
+    <div class="container mt-5 mb-5">
+        <h1 class="text-center mb-4">Influencer Profile Generator</h1>
+        <hr>
+
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card p-4 mb-4">
+                    <h2 class="card-title text-center mb-4">User Input</h2>
+
+                    <div class="mb-3">
+                        <label for="profilePicUrl" class="form-label">Profile Picture URL (Required)</label>
+                        <input type="url" class="form-control" id="profilePicUrl" value="https://via.placeholder.com/150/0d6efd/ffffff?text=P" placeholder="e.g., https://example.com/mypic.jpg">
+                    </div>
+
+                    <h4 class="mt-4 mb-3">Follower Counts & Links (InfTotal Calculation)</h4>
+                    <div id="followerInputs">
+                        <div class="row mb-2 align-items-center">
+                            <div class="col-4">
+                                <label for="xFollowers" class="form-label mb-0">X (Followers)</label>
+                            </div>
+                            <div class="col-4">
+                                <input type="number" class="form-control follower-input" id="xFollowers" placeholder="e.g., 10000">
+                            </div>
+                            <div class="col-4">
+                                <input type="url" class="form-control" id="xLink" placeholder="X Profile Link">
+                            </div>
+                        </div>
+
+                        <div class="row mb-2 align-items-center">
+                            <div class="col-4">
+                                <label for="igFollowers" class="form-label mb-0">Instagram (Followers)</label>
+                            </div>
+                            <div class="col-4">
+                                <input type="number" class="form-control follower-input" id="igFollowers" placeholder="e.g., 20000">
+                            </div>
+                            <div class="col-4">
+                                <input type="url" class="form-control" id="igLink" placeholder="Instagram Profile Link">
+                            </div>
+                        </div>
+
+                        <div class="row mb-2 align-items-center">
+                            <div class="col-4">
+                                <label for="fbFollowers" class="form-label mb-0">Facebook Page (Followers/Likes)</label>
+                            </div>
+                            <div class="col-4">
+                                <input type="number" class="form-control follower-input" id="fbFollowers" placeholder="e.g., 5000">
+                            </div>
+                            <div class="col-4">
+                                <input type="url" class="form-control" id="fbLink" placeholder="FB Page Link">
+                            </div>
+                        </div>
+
+                        <div class="row mb-2 align-items-center">
+                            <div class="col-4">
+                                <label for="ytSubscribers" class="form-label mb-0">YouTube (Subscribers)</label>
+                            </div>
+                            <div class="col-4">
+                                <input type="number" class="form-control follower-input" id="ytSubscribers" placeholder="e.g., 50000">
+                            </div>
+                            <div class="col-4">
+                                <input type="url" class="form-control" id="ytLink" placeholder="YouTube Channel Link">
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-2 align-items-center">
+                            <div class="col-4">
+                                <label for="threadsFollowers" class="form-label mb-0">Threads (Followers)</label>
+                            </div>
+                            <div class="col-4">
+                                <input type="number" class="form-control follower-input" id="threadsFollowers" placeholder="e.g., 8000">
+                            </div>
+                            <div class="col-4">
+                                <input type="url" class="form-control" id="threadsLink" placeholder="Threads Profile Link">
+                            </div>
+                        </div>
+
+                        <div class="row mb-2 align-items-center">
+                            <div class="col-4">
+                                <label for="otherFollowers" class="form-label mb-0">Other Platform (Followers)</label>
+                            </div>
+                            <div class="col-4">
+                                <input type="number" class="form-control follower-input" id="otherFollowers" placeholder="e.g., 2000">
+                            </div>
+                            <div class="col-4">
+                                <input type="url" class="form-control" id="otherLink" placeholder="Other Profile Link">
+                            </div>
+                        </div>
+                    </div>
+
+                    <h4 class="mt-4 mb-3">Last 3 Post Likes & Links (InfScore Calculation)</h4>
+                    <div id="likeInputs">
+                        <div class="row mb-2 align-items-center">
+                            <div class="col-4">
+                                <label for="post1Likes" class="form-label mb-0">Post 1 (Likes)</label>
+                            </div>
+                            <div class="col-4">
+                                <input type="number" class="form-control post-like-input" id="post1Likes" placeholder="e.g., 1000">
+                            </div>
+                            <div class="col-4">
+                                <input type="url" class="form-control" id="post1Link" placeholder="Post Link">
+                            </div>
+                        </div>
+
+                        <div class="row mb-2 align-items-center">
+                            <div class="col-4">
+                                <label for="post2Likes" class="form-label mb-0">Post 2 (Likes)</label>
+                            </div>
+                            <div class="col-4">
+                                <input type="number" class="form-control post-like-input" id="post2Likes" placeholder="e.g., 2500">
+                            </div>
+                            <div class="col-4">
+                                <input type="url" class="form-control" id="post2Link" placeholder="Post Link">
+                            </div>
+                        </div>
+
+                        <div class="row mb-2 align-items-center">
+                            <div class="col-4">
+                                <label for="post3Likes" class="form-label mb-0">Post 3 (Likes)</label>
+                            </div>
+                            <div class="col-4">
+                                <input type="number" class="form-control post-like-input" id="post3Likes" placeholder="e.g., 500">
+                            </div>
+                            <div class="col-4">
+                                <input type="url" class="form-control" id="post3Link" placeholder="Post Link">
+                            </div>
+                        </div>
+                    </div>
+
+                    <button class="btn btn-rounded btn-primary mt-4" onclick="generateReport()">Generate InfScore Report</button>
+
+                </div>
+            </div>
+        </div>
+        
+        <hr class="mt-5">
+
+        <h2 class="text-center mt-5 mb-4">InfScore Report</h2>
+        <div class="row justify-content-center">
+            <div class="col-md-6 text-center">
+                <img id="displayProfilePic" class="profile-img" src="https://via.placeholder.com/150/0d6efd/ffffff?text=P" alt="Profile Picture">
+            </div>
+        </div>
+
+        <div class="row justify-content-center mt-4">
+            <div class="col-md-4 mb-4">
+                <div class="total-box">
+                    <h3>InfTotal</h3>
+                    <p class="h1" id="infTotalOutput">0</p>
+                    <p class="mb-0">Total Followers/Subscribers</p>
+                </div>
+            </div>
+            
+            <div class="col-md-4 mb-4">
+                <div class="total-box">
+                    <h3>InfScore</h3>
+                    <p class="h1" id="infScoreOutput">0</p>
+                    <p class="mb-0">Total Last 3 Post Likes</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row justify-content-center mt-4">
+            <div class="col-md-8">
+                <div class="card p-4">
+                    <h4 class="mb-3 text-center">Detailed Metrics</h4>
+                    <ul class="list-group list-group-flush" id="detailedMetrics">
+                        </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="bg-black text-white text-center py-3 mt-5">
+        <div class="container">
+            <p class="mb-0" style="font-family: sans-serif;">&copy; InfScore 2025/26</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Utility function to format numbers (e.g., 100000 -> 100K)
+        function formatNumber(num) {
+            if (num >= 1000000) {
+                return (num / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
+            }
+            if (num >= 1000) {
+                return (num / 1000).toFixed(1).replace(/\.0$/, '') + 'K';
+            }
+            return num.toString();
+        }
+
+        function generateReport() {
+            let totalFollowers = 0;
+            let totalLikes = 0;
+            
+            const detailedMetricsList = document.getElementById('detailedMetrics');
+            detailedMetricsList.innerHTML = ''; // Clear previous results
+
+            // 1. COLLECT FOLLOWER DATA (InfTotal)
+            const followerPlatforms = [
+                { name: 'X (Followers)', id: 'xFollowers', linkId: 'xLink' },
+                { name: 'Instagram (Followers)', id: 'igFollowers', linkId: 'igLink' },
+                { name: 'Facebook (Followers/Likes)', id: 'fbFollowers', linkId: 'fbLink' },
+                { name: 'YouTube (Subscribers)', id: 'ytSubscribers', linkId: 'ytLink' },
+                { name: 'Threads (Followers)', id: 'threadsFollowers', linkId: 'threadsLink' },
+                { name: 'Other (Followers)', id: 'otherFollowers', linkId: 'otherLink' }
+            ];
+
+            followerPlatforms.forEach(platform => {
+                const countInput = document.getElementById(platform.id);
+                const linkInput = document.getElementById(platform.linkId);
+                const count = parseInt(countInput.value) || 0;
+                const link = linkInput.value;
+
+                totalFollowers += count;
+
+                let listItem = `<li class="list-group-item d-flex justify-content-between align-items-center">
+                                    ${platform.name}: 
+                                    <span>
+                                        <strong>${count.toLocaleString()}</strong>`;
+                
+                if (link) {
+                    listItem += ` <a href="${link}" target="_blank" class="btn btn-sm btn-rounded btn-primary ms-3">Visit Profile</a>`;
+                }
+                listItem += `</span></li>`;
+                detailedMetricsList.innerHTML += listItem;
+            });
+
+            // 2. COLLECT POST LIKES DATA (InfScore)
+            const postLinks = [
+                { name: 'Post 1 Likes', id: 'post1Likes', linkId: 'post1Link' },
+                { name: 'Post 2 Likes', id: 'post2Likes', linkId: 'post2Link' },
+                { name: 'Post 3 Likes', id: 'post3Likes', linkId: 'post3Link' }
+            ];
+
+            postLinks.forEach(post => {
+                const countInput = document.getElementById(post.id);
+                const linkInput = document.getElementById(post.linkId);
+                const count = parseInt(countInput.value) || 0;
+                const link = linkInput.value;
+                
+                totalLikes += count;
+
+                let listItem = `<li class="list-group-item d-flex justify-content-between align-items-center">
+                                    ${post.name}: 
+                                    <span>
+                                        <strong>${count.toLocaleString()}</strong>`;
+                
+                if (link) {
+                    listItem += ` <a href="${link}" target="_blank" class="btn btn-sm btn-rounded btn-primary ms-3">Visit Post</a>`;
+                }
+                listItem += `</span></li>`;
+                detailedMetricsList.innerHTML += listItem;
+            });
+
+
+            // 3. DISPLAY RESULTS
+            document.getElementById('infTotalOutput').textContent = formatNumber(totalFollowers);
+            document.getElementById('infScoreOutput').textContent = formatNumber(totalLikes);
+
+            // 4. UPDATE PROFILE PICTURE
+            const profilePicUrl = document.getElementById('profilePicUrl').value;
+            document.getElementById('displayProfilePic').src = profilePicUrl || "https://via.placeholder.com/150/0d6efd/ffffff?text=P";
+        }
+
+        // Run on page load with default values
+        document.addEventListener('DOMContentLoaded', generateReport);
+    </script>
+
+</body>
+</html>
