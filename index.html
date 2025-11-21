@@ -1,361 +1,280 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>InfScore - Influencer Score Calculator</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>InfScore - Social Media Influence Calculator</title>
 
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Bootstrap Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+  <!-- jsPDF + autoTable for PDF generation -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 
-    <link href="https://fonts.googleapis.com/css2?family=Bungee+Shade&display=swap" rel="stylesheet">
-
-    <style>
-        /* Apply Arial to the entire body except where overridden */
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f8f9fa; /* Light background */
-            color: #212529; /* Black text */
-        }
-
-        /* Style for the Digital Font in the Navbar Title */
-        .navbar-brand-digital {
-            font-family: 'Bungee Shade', cursive;
-            color: #0d6efd !important; /* Blue color */
-            font-size: 1.8rem;
-        }
-
-        .navbar {
-            background-color: #ffffff; /* White navbar background */
-            border-bottom: 3px solid #0d6efd; /* Blue border for emphasis */
-        }
-
-        .btn-primary, .btn-primary:hover, .btn-primary:focus {
-            background-color: #0d6efd; /* Blue */
-            border-color: #0d6efd;
-        }
-
-        .card-header {
-            background-color: #0d6efd; /* Blue card header */
-            color: white;
-        }
-
-        /* Styling for the faux logo text */
-        .logo-text {
-            display: inline-block;
-            transform: rotate(-10deg);
-            margin-right: 5px;
-            font-size: 1.5rem;
-            color: #0d6efd;
-            font-weight: bold;
-        }
-    </style>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif !important;
+      background-color: #ffffff;
+      color: #000000;
+    }
+    .navbar {
+      background-color: #000000;
+    }
+    .navbar-brand, .nav-link, .navbar-text {
+      color: white !important;
+    }
+    .btn-orange {
+      background-color: #ff6200;
+      border-color: #ff6200;
+      color: white;
+    }
+    .btn-orange:hover {
+      background-color: #e55a00;
+      border-color: #e55a00;
+    }
+    .form-control:focus {
+      border-color: #ff6200;
+      box-shadow: 0 0 0 0.2rem rgba(255, 98, 0, 0.25);
+    }
+    .inf-total {
+      font-size: 2.5rem;
+      font-weight: bold;
+      color: #ff6200;
+    }
+    .inf-score {
+      font-size: 2rem;
+      font-weight: bold;
+      color: #000000;
+    }
+    .logo-img {
+      width: 40px;
+      height: 40px;
+      margin-right: 10px;
+    }
+    .watermark {
+      position: fixed;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 1.5rem;
+      color: rgba(0,0,0,0.1);
+      font-weight: bold;
+      pointer-events: none;
+      z-index: 1000;
+    }
+  </style>
 </head>
 <body>
 
-    <nav class="navbar navbar-expand-lg navbar-light">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="#">
-                <span class="logo-text">⚡</span>
-                <span class="navbar-brand-digital">InfScore</span>
-            </a>
+<nav class="navbar navbar-expand-lg navbar-dark">
+  <div class="container-fluid">
+    <a class="navbar-brand d-flex align-items-center" href="#">
+      <svg class="logo-img" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="50" cy="50" r="45" fill="#ff6200"/>
+        <text x="50" y="62" font-family="Arial Black, Arial" font-size="60" fill="white" text-anchor="middle">I</text>
+      </svg>
+      <strong>InfScore</strong>
+    </a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasMenu">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+  </div>
+</nav>
 
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
+<!-- Offcanvas Burger Menu -->
+<div class="offcanvas offcanvas-end text-bg-dark" tabindex="-1" id="offcanvasMenu">
+  <div class="offcanvas-header">
+    <h5 class="offcanvas-title">Menu</h5>
+    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"></button>
+  </div>
+  <div class="offcanvas-body">
+    <div class="d-grid gap-3">
+      <button class="btn btn-orange btn-lg" data-bs-toggle="modal" data-bs-target="#aboutModal">
+        What's InfScore?
+      </button>
 
-            <div class="collapse navbar-collapse" id="navbarNavDropdown">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item">
-                        <button class="btn btn-outline-primary me-2" type="button" data-bs-toggle="modal" data-bs-target="#aboutModal">
-                            What's InfScore?
-                        </button>
-                    </li>
-
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle btn btn-primary text-white" href="#" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            Contact Us
-                        </a>
-                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdownMenuLink">
-                            <li><a class="dropdown-item" href="https://wa.me/27824598656" target="_blank">WhatsApp: +27824598656</a></li>
-                            <li><a class="dropdown-item" href="mailto:kgolaganopeterpoo@gmail.com">Email: kgolaganopeterpoo@gmail.com</a></li>
-                        </ul>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </nav>
-
-    <div class="container mt-5 mb-5">
-        <h1 class="text-center text-primary mb-4">Influencer Score Calculator</h1>
-        
-        <div class="row">
-            <div class="col-lg-4 mb-4">
-                <div class="card shadow-sm">
-                    <div class="card-header">
-                        User Profile
-                    </div>
-                    <div class="card-body">
-                        <div class="mb-3">
-                            <label for="fullName" class="form-label">Full Name</label>
-                            <input type="text" class="form-control" id="fullName" placeholder="Enter your full name">
-                        </div>
-                        <div class="mb-3">
-                            <label for="country" class="form-label">Country of Residence</label>
-                            <input type="text" class="form-control" id="country" placeholder="Enter your country">
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="col-lg-8">
-                <div class="card shadow-sm">
-                    <div class="card-header">
-                        Followers on Social Media (Enter in Thousands - K)
-                    </div>
-                    <div class="card-body">
-                        <form id="followerForm" class="row g-3">
-                            <div class="col-md-3"><label for="tiktok" class="form-label">TikTok</label><input type="number" class="form-control follower-input" id="tiktok" data-platform="TikTok" value="0" min="0"></div>
-                            <div class="col-md-3"><label for="wechat" class="form-label">WeChat</label><input type="number" class="form-control follower-input" id="wechat" data-platform="WeChat" value="0" min="0"></div>
-                            <div class="col-md-3"><label for="facebook" class="form-label">Facebook</label><input type="number" class="form-control follower-input" id="facebook" data-platform="Facebook" value="0" min="0"></div>
-                            <div class="col-md-3"><label for="instagram" class="form-label">Instagram</label><input type="number" class="form-control follower-input" id="instagram" data-platform="Instagram" value="0" min="0"></div>
-                            
-                            <div class="col-md-3"><label for="snapchat" class="form-label">Snapchat</label><input type="number" class="form-control follower-input" id="snapchat" data-platform="Snapchat" value="0" min="0"></div>
-                            <div class="col-md-3"><label for="youtube" class="form-label">YouTube</label><input type="number" class="form-control follower-input" id="youtube" data-platform="YouTube" value="0" min="0"></div>
-                            <div class="col-md-3"><label for="reddit" class="form-label">Reddit</label><input type="number" class="form-control follower-input" id="reddit" data-platform="Reddit" value="0" min="0"></div>
-                            <div class="col-md-3"><label for="whatsapp" class="form-label">WhatsApp</label><input type="number" class="form-control follower-input" id="whatsapp" data-platform="WhatsApp" value="0" min="0"></div>
-                            
-                            <div class="col-md-3"><label for="linkedin" class="form-label">LinkedIn</label><input type="number" class="form-control follower-input" id="linkedin" data-platform="LinkedIn" value="0" min="0"></div>
-                            <div class="col-md-3"><label for="pinterest" class="form-label">Pinterest</label><input type="number" class="form-control follower-input" id="pinterest" data-platform="Pinterest" value="0" min="0"></div>
-                            <div class="col-md-3"><label for="xtwitter" class="form-label">X (Twitter)</label><input type="number" class="form-control follower-input" id="xtwitter" data-platform="X (Twitter)" value="0" min="0"></div>
-                            <div class="col-md-3"><label for="qq" class="form-label">QQ</label><input type="number" class="form-control follower-input" id="qq" data-platform="QQ" value="0" min="0"></div>
-                            
-                            <div class="col-md-3"><label for="weibo" class="form-label">Weibo</label><input type="number" class="form-control follower-input" id="weibo" data-platform="Weibo" value="0" min="0"></div>
-                            <div class="col-md-3"><label for="kuaishou" class="form-label">Kuaishou</label><input type="number" class="form-control follower-input" id="kuaishou" data-platform="Kuaishou" value="0" min="0"></div>
-                            <div class="col-md-3"><label for="threads" class="form-label">Threads</label><input type="number" class="form-control follower-input" id="threads" data-platform="Threads" value="0" min="0"></div>
-                            <div class="col-md-3"><label for="twitch" class="form-label">Twitch</label><input type="number" class="form-control follower-input" id="twitch" data-platform="Twitch" value="0" min="0"></div>
-
-                            <div class="col-md-3"><label for="discord" class="form-label">Discord</label><input type="number" class="form-control follower-input" id="discord" data-platform="Discord" value="0" min="0"></div>
-                            <div class="col-md-3"><label for="quora" class="form-label">Quora</label><input type="number" class="form-control follower-input" id="quora" data-platform="Quora" value="0" min="0"></div>
-                            <div class="col-md-3"><label for="tumblr" class="form-label">Tumblr</label><input type="number" class="form-control follower-input" id="tumblr" data-platform="Tumblr" value="0" min="0"></div>
-                            <div class="col-md-3"><label for="telegram" class="form-label">Telegram</label><input type="number" class="form-control follower-input" id="telegram" data-platform="Telegram" value="0" min="0"></div>
-
-                            <div class="col-md-3"><label for="douyin" class="form-label">Douyin</label><input type="number" class="form-control follower-input" id="douyin" data-platform="Douyin" value="0" min="0"></div>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="card shadow-lg mt-4 border-primary">
-            <div class="card-body">
-                <h3 class="text-center text-primary mb-3">Calculation Results</h3>
-                <div class="row text-center">
-                    <div class="col-md-6 border-end border-primary">
-                        <p class="mb-0 text-muted">Total Followers Across All Platforms</p>
-                        <h2 class="text-black"><span id="infTotalDisplay">0</span></h2>
-                        <span class="badge bg-secondary">InfTotal (in K)</span>
-                    </div>
-                    <div class="col-md-6">
-                        <p class="mb-0 text-muted">Calculated Influence Score</p>
-                        <h2 class="text-black"><span id="infScoreDisplay">0</span></h2>
-                        <span class="badge bg-secondary">InfScore (Total * 0.01)</span>
-                    </div>
-                </div>
-            </div>
-            <div class="card-footer text-center">
-                <button id="downloadPdfBtn" class="btn btn-success"><i class="fas fa-file-download me-2"></i>Download Results as PDF</button>
-            </div>
-        </div>
+      <div class="dropdown">
+        <button class="btn btn-outline-light btn-lg dropdown-toggle w-100" type="button" data-bs-toggle="dropdown">
+          Contact Us
+        </button>
+        <ul class="dropdown-menu w-100">
+          <li><a class="dropdown-item" href="https://wa.me/27824598656" target="_blank">
+            <i class="bi bi-whatsapp"></i> WhatsApp +27 82 459 8656
+          </a></li>
+          <li><a class="dropdown-item" href="mailto:kgolaganopeterpoo@gmail.com">
+            <i class="bi bi-envelope"></i> kgolaganopeterpoo@gmail.com
+          </a></li>
+        </ul>
+      </div>
     </div>
+  </div>
+</div>
 
-    <div class="modal fade" id="aboutModal" tabindex="-1" aria-labelledby="aboutModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header bg-primary text-white">
-                    <h5 class="modal-title" id="aboutModalLabel">What's InfScore?</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <p class="lead">InfScore is a **simple, rapid influence calculator** designed for content creators, marketers, and individuals seeking a benchmark of their combined social media reach.</p>
-                    <p>It aggregates the total number of followers across a comprehensive list of global and regional social media platforms (including TikTok, X, YouTube, WeChat, Douyin, and more). It then calculates a proprietary **InfScore** by applying a weight factor of **0.01** to the total follower count.</p>
-                    <p class="text-muted">This score provides a quick, standardized metric to compare influence potential, offering insight into your digital footprint across the decentralized social web.</p>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                </div>
+<div class="container my-5">
+  <div class="row">
+    <div class="col-lg-8 mx-auto">
+      <div class="card shadow border-0">
+        <div class="card-body p-5">
+          <h2 class="text-center mb-4" style="color:#ff6200;">Calculate Your InfScore</h2>
+
+          <div class="row mb-4">
+            <div class="col-md-6">
+              <label class="form-label">Full Name</label>
+              <input type="text" id="fullName" class="form-control" placeholder="Enter your full name" required>
             </div>
+            <div class="col-md-6">
+              <label class="form-label">Country of Residence</label>
+              <input type="text" id="country" class="form-control" placeholder="e.g. South Africa" required>
+            </div>
+          </div>
+
+          <hr class="my-5">
+
+          <h4 class="mb-4">Enter Your Followers (exact numbers)</h4>
+          <div class="row row-cols-1 row-cols-md-3 g-4" id="platforms"></div>
+
+          <div class="text-center mt-5">
+            <button class="btn btn-orange btn-lg px-5" onclick="calculate()">Calculate InfScore</button>
+          </div>
+
+          <div id="results" class="mt-5 text-center d-none">
+            <h3>InfTotal: <span id="totalDisplay" class="inf-total">0</span></h3>
+            <h3>InfScore: <span id="scoreDisplay" class="inf-score">0</span></h3>
+            <button class="btn btn-dark btn-lg mt-4" onclick="downloadPDF()">Download PDF Report</button>
+          </div>
         </div>
+      </div>
     </div>
+  </div>
+</div>
 
-    <div id="pdfContent" style="display: none;">
-        <div id="pdf-container" style="padding: 20px; width: 800px; margin: 0 auto; background-color: white; font-family: Arial, sans-serif;">
-            <div style="text-align: center; border-bottom: 2px solid #0d6efd; padding-bottom: 10px;">
-                <h1 style="font-family: 'Bungee Shade', cursive; color: #0d6efd; font-size: 36px; margin-bottom: 5px;">InfScore</h1>
-                <p style="font-size: 18px; margin-bottom: 10px;">Influencer Score Report</p>
-            </div>
-            
-            <div style="margin-top: 20px; margin-bottom: 30px; line-height: 1.6;">
-                <p><strong>Name:</strong> <span id="pdfFullName"></span></p>
-                <p><strong>Country:</strong> <span id="pdfCountry"></span></p>
-                <p><strong>Date Generated:</strong> <span id="pdfDate"></span></p>
-            </div>
-
-            <h3 style="color: #0d6efd; border-bottom: 1px solid #ccc; padding-bottom: 5px;">Summary Results</h3>
-            <table style="width: 100%; border-collapse: collapse; margin-bottom: 30px;">
-                <tr>
-                    <td style="padding: 10px; border: 1px solid #ddd; background-color: #e9f5ff; font-weight: bold;">Total Followers (InfTotal)</td>
-                    <td style="padding: 10px; border: 1px solid #ddd; text-align: right;"><span id="pdfInfTotal"></span> K</td>
-                </tr>
-                <tr>
-                    <td style="padding: 10px; border: 1px solid #ddd; background-color: #f7f7f7; font-weight: bold;">Calculated InfScore</td>
-                    <td style="padding: 10px; border: 1px solid #ddd; text-align: right;"><span id="pdfInfScore"></span></td>
-                </tr>
-            </table>
-
-            <h3 style="color: #0d6efd; border-bottom: 1px solid #ccc; padding-bottom: 5px;">Platform Details (Followers in Thousands - K)</h3>
-            <table id="pdfDetailsTable" style="width: 100%; border-collapse: collapse;">
-                <thead>
-                    <tr style="background-color: #0d6efd; color: white;">
-                        <th style="padding: 10px; border: 1px solid #ddd;">Platform</th>
-                        <th style="padding: 10px; border: 1px solid #ddd; text-align: right;">Followers (K)</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    </tbody>
-            </table>
-            
-            <div style="position: relative; text-align: center; margin-top: 50px;">
-                <p style="font-family: 'Bungee Shade', cursive; color: rgba(0, 0, 0, 0.1); font-size: 40px; transform: rotate(-5deg); display: inline-block;">Generated with InfScore 2025/26</p>
-            </div>
-        </div>
+<!-- About Modal -->
+<div class="modal fade" id="aboutModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header bg-black text-white">
+        <h5 class="modal-title">What's InfScore?</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p><strong>InfScore</strong> is a universal influence metric that measures your total social media reach across all major platforms worldwide.</p>
+        <p>We add up your followers from TikTok, Instagram, YouTube, WeChat, X (Twitter), and 20+ other platforms to give you one single number: your <strong>InfTotal</strong>.</p>
+        <p>Your <strong>InfScore</strong> is then calculated as InfTotal × 0.01 — a clean, comparable score that influencers, brands, and agencies use to quickly understand reach and influence power.</p>
+        <p>Perfect for creators, celebrities, marketers, and talent managers.</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-orange" data-bs-dismiss="modal">Close</button>
+      </div>
     </div>
+  </div>
+</div>
 
+<!-- Watermark (visible only on PDF) -->
+<div class="watermark d-none d-print-block">Generated with InfScore 2025/26</div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script>
-        // Ensure window.jsPDF is available for older browser compatibility
-        window.jsPDF = window.jspdf.jsPDF;
-        
-        // Social Media follower inputs
-        const followerInputs = document.querySelectorAll('.follower-input');
-        const fullNameInput = document.getElementById('fullName');
-        const countryInput = document.getElementById('country');
-        const infTotalDisplay = document.getElementById('infTotalDisplay');
-        const infScoreDisplay = document.getElementById('infScoreDisplay');
-        const downloadPdfBtn = document.getElementById('downloadPdfBtn');
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
-        // Function to format numbers for display (e.g., 50000 -> 50K)
-        function formatNumber(num) {
-            if (num >= 1000000) {
-                return (num / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
-            }
-            if (num >= 1000) {
-                return (num / 1000).toFixed(1).replace(/\.0$/, '') + 'K';
-            }
-            return num.toString();
-        }
+<script>
+const platforms = [
+  "TikTok", "WeChat", "Facebook", "Instagram", "Snapchat", "YouTube", "Reddit",
+  "WhatsApp", "LinkedIn", "Pinterest", "X (Twitter)", "QQ", "Weibo", "Kuaishou",
+  "Threads", "Twitch", "Discord", "Quora", "Tumblr", "Telegram", "Douyin"
+];
 
-        // Calculation logic
-        function calculateScores() {
-            let totalFollowers = 0;
-            
-            // Note: Inputs are in Thousands (K), so we multiply the entered value by 1000 to get the absolute total
-            followerInputs.forEach(input => {
-                const value = parseFloat(input.value) || 0;
-                // Accumulate the number in thousands (K) for internal calculation and InfTotal (in K) display
-                totalFollowers += value; 
-            });
+const platformContainer = document.getElementById("platforms");
+platforms.forEach(p => {
+  const div = document.createElement("div");
+  div.className = "col";
+  div.innerHTML = `
+    <label class="form-label">${p}</label>
+    <input type="number" min="0" class="form-control follower-input" data-platform="${p}" placeholder="0">
+  `;
+  platformContainer.appendChild(div);
+});
 
-            // InfScore calculation: (Total Followers in K) * 0.01
-            const infScore = totalFollowers * 0.01;
+function formatNumber(num) {
+  if (num >= 1e9) return (num / 1e9).toFixed(1) + "B";
+  if (num >= 1e6) return (num / 1e6).toFixed(1) + "M";
+  if (num >= 1e3) return (num / 1e3).toFixed(1) + "K";
+  return num.toString();
+}
 
-            // Display Results
-            // InfTotal is displayed as the sum of K values (e.g., 50000 K)
-            infTotalDisplay.textContent = formatNumber(totalFollowers * 1000); 
-            
-            // InfScore is displayed as the calculated value (e.g., 500)
-            infScoreDisplay.textContent = formatNumber(infScore * 1000); 
-        }
+function calculate() {
+  let total = 0;
+  document.querySelectorAll(".follower-input").forEach(input => {
+    const val = parseInt(input.value) || 0;
+    total += val;
+  });
 
-        // Event listeners for real-time calculation
-        followerInputs.forEach(input => {
-            input.addEventListener('input', calculateScores);
-        });
+  const score = total * 0.01;
 
-        // Initial calculation on load
-        document.addEventListener('DOMContentLoaded', calculateScores);
-        
-        // PDF Download Functionality
-        downloadPdfBtn.addEventListener('click', async () => {
-            const pdfContainer = document.getElementById('pdf-container');
-            
-            // 1. Update PDF Template Data
-            const totalFollowersK = Array.from(followerInputs).reduce((sum, input) => sum + (parseFloat(input.value) || 0), 0);
-            const infScoreValue = totalFollowersK * 0.01;
-            
-            document.getElementById('pdfFullName').textContent = fullNameInput.value || 'N/A';
-            document.getElementById('pdfCountry').textContent = countryInput.value || 'N/A';
-            document.getElementById('pdfDate').textContent = new Date().toLocaleDateString();
-            document.getElementById('pdfInfTotal').textContent = formatNumber(totalFollowersK * 1000);
-            document.getElementById('pdfInfScore').textContent = formatNumber(infScoreValue * 1000);
+  document.getElementById("totalDisplay").textContent = formatNumber(total);
+  document.getElementById("scoreDisplay").textContent = formatNumber(score);
+  document.getElementById("results").classList.remove("d-none");
+}
 
-            // Populate the details table
-            const detailsTableBody = document.querySelector('#pdfDetailsTable tbody');
-            detailsTableBody.innerHTML = ''; // Clear previous data
-            followerInputs.forEach(input => {
-                const platformName = input.getAttribute('data-platform');
-                const followers = parseFloat(input.value) || 0;
-                
-                if (followers > 0) {
-                    const row = detailsTableBody.insertRow();
-                    row.innerHTML = `
-                        <td style="padding: 10px; border: 1px solid #ddd;">${platformName}</td>
-                        <td style="padding: 10px; border: 1px solid #ddd; text-align: right;">${followers.toLocaleString()}</td>
-                    `;
-                }
-            });
+function downloadPDF() {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF("p", "mm", "a4");
 
-            // If the table is empty, add a row
-            if (detailsTableBody.children.length === 0) {
-                 const row = detailsTableBody.insertRow();
-                 row.innerHTML = `<td colspan="2" style="padding: 10px; border: 1px solid #ddd; text-align: center;">No follower data entered.</td>`;
-            }
+  const name = document.getElementById("fullName").value || "Influencer";
+  const country = document.getElementById("country").value || "";
 
+  // Logo & Title
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(40);
+  doc.setTextColor(255, 98, 0);
+  doc.text("InfScore", 105, 30, { align: "center" });
 
-            // 2. Generate PDF using html2canvas and jsPDF
-            try {
-                // Generate canvas from the styled HTML
-                const canvas = await html2canvas(pdfContainer, {
-                    scale: 2, // Higher resolution
-                    useCORS: true,
-                    // Use a slightly larger size than default for better quality
-                    width: 800, 
-                    height: pdfContainer.scrollHeight
-                });
+  doc.setFontSize(20);
+  doc.setTextColor(0, 0, 0);
+  doc.text(name, 105, 45, { align: "center" });
+  doc.setFontSize(14);
+  doc.text(country, 105, 53, { align: "center" });
 
-                // Initialize jsPDF
-                const { jsPDF } = window.jspdf;
-                const imgData = canvas.toDataURL('image/png');
-                const pdf = new jsPDF('p', 'mm', 'a4'); 
-                const imgProps= pdf.getImageProperties(imgData);
-                
-                // Calculate size to fit A4 (210mm wide) with some padding
-                const pdfWidth = 200; // 10mm margin on each side (210 - 10)
-                const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
-                
-                // Add the image to the PDF
-                pdf.addImage(imgData, 'PNG', 5, 5, pdfWidth, pdfHeight);
+  // Table data
+  const tableData = [];
+  let total = 0;
+  document.querySelectorAll(".follower-input").forEach(input => {
+    const platform = input.dataset.platform;
+    const followers = parseInt(input.value) || 0;
+    if (followers > 0) {
+      tableData.push([platform, formatNumber(followers)]);
+      total += followers;
+    }
+  });
 
-                // Save the PDF
-                pdf.save('InfScore_Report.pdf');
+  const score = total * 0.01;
 
-            } catch (error) {
-                console.error("Error generating PDF:", error);
-                alert("An error occurred while generating the PDF. Please try again.");
-            }
-        });
-    </script>
+  // AutoTable
+  doc.autoTable({
+    startY: 70,
+    head: [['Platform', 'Followers']],
+    body: tableData,
+    theme: 'grid',
+    styles: { fontSize: 12, cellPadding: 5 },
+    headStyles: { fillColor: [255, 98, 0], textColor: 255 },
+  });
+
+  // Totals
+  const finalY = doc.lastAutoTable.finalY + 20;
+  doc.setFontSize(18);
+  doc.setTextColor(255, 98, 0);
+  doc.text(`InfTotal: ${formatNumber(total)}`, 105, finalY, { align: "center" });
+  doc.setFontSize(22);
+  doc.setTextColor(0, 0, 0);
+  doc.text(`InfScore: ${formatNumber(score)}`, 105, finalY + 15, { align: "center" });
+
+  // Watermark
+  doc.setFontSize(20);
+  doc.setTextColor(200, 200, 200);
+  doc.text("Generated with InfScore 2025/26", 105, 280, { align: "center" });
+
+  doc.save(`${name.replace(/ /g, "_")}_InfScore_Report.pdf`);
+}
+</script>
+
 </body>
 </html>
