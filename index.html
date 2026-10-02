@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>InfScore - Social Influence Calculator & Certification</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#f0f3ff',
+              100: '#d9e2ff',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+              900: '#1e1b4b',
+              accent: '#06b6d4',
+              pink: '#ec4899',
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <!-- Google Font: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  
+  <!-- jsPDF & html2canvas for PDF Generation -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #0f172a;
+      color: #f8fafc;
+      overflow-x: hidden;
+    }
+    
+    .glass-card {
+      background: rgba(30, 41, 59, 0.7);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    
+    .glass-card-hover {
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .glass-card-hover:hover {
+      transform: translateY(-2px);
+      border-color: rgba(99, 102, 241, 0.4);
+      box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.15);
+    }
+
+    .glow-purple {
+      box-shadow: 0 0 35px -5px rgba(99, 102, 241, 0.3);
+    }
+    
+    .glow-accent {
+      box-shadow: 0 0 35px -5px rgba(6, 182, 212, 0.3);
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0f172a;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #475569;
+    }
+
+    /* Gradient Animation */
+    .animated-gradient {
+      background: linear-gradient(-45deg, #4f46e5, #06b6d4, #ec4899, #8b5cf6);
+      background-size: 400% 400%;
+      animation: gradient 12s ease infinite;
+    }
+
+    @keyframes gradient {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between antialiased selection:bg-brand-500 selection:text-white">
+
+  <!-- Navigation Header -->
+  <header class="sticky top-0 z-40 w-full glass-card border-b border-slate-800 bg-slate-900/80">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16 sm:h-20">
+        <!-- Logo -->
+        <div class="flex items-center space-x-3 cursor-pointer" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-500 via-cyan-400 to-pink-500 flex items-center justify-center shadow-lg shadow-indigo-500/30">
+            <i class="fa-solid font-black text-xl text-white fa-bolt"></i>
+          </div>
+          <span class="text-2xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white via-slate-100 to-slate-400">
+            Inf<span class="text-indigo-400">Score</span>
+          </span>
+        </div>
+
+        <!-- Quick Demo & Action Header Buttons -->
+        <div class="flex items-center space-x-3 sm:space-x-4">
+          <button id="btn-load-sample" onclick="loadSampleData()" class="px-3.5 py-2 text-xs sm:text-sm font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 text-indigo-300 border border-indigo-500/30 transition-all duration-200 flex items-center space-x-2 shadow-sm">
+            <i class="fa-solid fa-wand-magic-sparkles text-indigo-400"></i>
+            <span>Load Sample Data</span>
+          </button>
+          <a href="#calculator" class="hidden sm:inline-flex px-4 py-2 text-xs sm:text-sm font-semibold rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-600/30 transition-all">
+            Calculate Now
+          </a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="relative pt-12 pb-16 overflow-hidden">
+    <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-indigo-900/30 via-slate-900 to-slate-950 pointer-events-none"></div>
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+      <div class="text-center max-w-3xl mx-auto">
+        <div class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 mb-6">
+          <span class="flex h-2 w-2 rounded-full bg-indigo-400 animate-ping mr-2"></span>
+          Official Social Influence Standard
+        </div>
+        <h1 class="text-4xl sm:text-6xl font-black tracking-tight text-white mb-6 leading-tight">
+          Quantify Your Digital <span class="bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 via-cyan-400 to-pink-400">Influence</span>
+        </h1>
+        <p class="text-base sm:text-lg text-slate-400 leading-relaxed mb-8">
+          Aggregate your total social media reach across 10 top platforms. Calculate your certified <strong class="text-slate-200">InfScore</strong> (1% of total follower mass) and download an official verification PDF report.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Calculator & Analytics Grid -->
+  <main id="calculator" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20 w-full">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+      
+      <!-- Left Column: User Details & Social Media Inputs (7 cols) -->
+      <div class="lg:col-span-7 space-y-6">
+        
+        <!-- Step 1: User Profile Details -->
+        <div class="glass-card rounded-2xl p-6 sm:p-8">
+          <div class="flex items-center space-x-3 mb-6 border-b border-slate-800 pb-4">
+            <span class="w-8 h-8 rounded-lg bg-indigo-500/20 text-indigo-400 flex items-center justify-center font-bold text-sm">1</span>
+            <h2 class="text-xl font-bold text-white">Creator Details</h2>
+          </div>
+
+          <form id="creator-form" onsubmit="return false;" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="sm:col-span-1">
+              <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Full Name <span class="text-rose-400">*</span></label>
+              <div class="relative">
+                <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
+                  <i class="fa-solid fa-user text-sm"></i>
+                </span>
+                <input type="text" id="user-name" placeholder="Alex Morgan" required oninput="calculateInfScore()" class="w-full pl-10 pr-4 py-2.5 bg-slate-900/90 border border-slate-700/80 rounded-xl text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm transition">
+              </div>
+            </div>
+
+            <div class="sm:col-span-1">
+              <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Country of Origin <span class="text-rose-400">*</span></label>
+              <div class="relative">
+                <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
+                  <i class="fa-solid fa-earth-americas text-sm"></i>
+                </span>
+                <select id="user-country" required onchange="calculateInfScore()" class="w-full pl-10 pr-4 py-2.5 bg-slate-900/90 border border-slate-700/80 rounded-xl text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm transition">
+                  <option value="" disabled selected>Select Country...</option>
+                  <option value="United States">United States</option>
+                  <option value="United Kingdom">United Kingdom</option>
+                  <option value="Canada">Canada</option>
+                  <option value="Australia">Australia</option>
+                  <option value="South Africa">South Africa</option>
+                  <option value="Germany">Germany</option>
+                  <option value="France">France</option>
+                  <option value="Brazil">Brazil</option>
+                  <option value="India">India</option>
+                  <option value="Japan">Japan</option>
+                  <option value="Nigeria">Nigeria</option>
+                  <option value="United Arab Emirates">United Arab Emirates</option>
+                  <option value="Singapore">Singapore</option>
+                  <option value="Other">Other Country</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="sm:col-span-2">
+              <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Primary Email <span class="text-slate-500 text-[10px]">(Optional for certificate)</span></label>
+              <div class="relative">
+                <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
+                  <i class="fa-solid fa-envelope text-sm"></i>
+                </span>
+                <input type="email" id="user-email" placeholder="alex@creator.com" class="w-full pl-10 pr-4 py-2.5 bg-slate-900/90 border border-slate-700/80 rounded-xl text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm transition">
+              </div>
+            </div>
+          </form>
+        </div>
+
+        <!-- Step 2: Top 10 Social Media Platforms Form -->
+        <div class="glass-card rounded-2xl p-6 sm:p-8">
+          <div class="flex items-center justify-between mb-6 border-b border-slate-800 pb-4">
+            <div class="flex items-center space-x-3">
+              <span class="w-8 h-8 rounded-lg bg-cyan-500/20 text-cyan-400 flex items-center justify-center font-bold text-sm">2</span>
+              <h2 class="text-xl font-bold text-white">Top 10 Social Media Platforms</h2>
+            </div>
+            <button type="button" onclick="resetAllInputs()" class="text-xs text-slate-400 hover:text-slate-200 transition flex items-center space-x-1">
+              <i class="fa-solid fa-rotate-right"></i>
+              <span>Clear Inputs</span>
+            </button>
+          </div>
+
+          <!-- Platforms List Container -->
+          <div id="platforms-container" class="space-y-4">
+            <!-- Dynamically Rendered Platforms or HTML Structured inputs below -->
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Right Column: Live InfScore Analytics & PDF Generation (5 cols) -->
+      <div class="lg:col-span-5 space-y-6 lg:sticky lg:top-24 h-fit">
+        
+        <!-- Score Card & Tier Gauge -->
+        <div class="glass-card rounded-2xl p-6 sm:p-8 relative overflow-hidden border-indigo-500/30 glow-purple">
+          <!-- Background Glow Effect -->
+          <div class="absolute -top-24 -right-24 w-48 h-48 bg-indigo-500/20 rounded-full blur-3xl pointer-events-none"></div>
+
+          <div class="flex items-center justify-between mb-4">
+            <span class="text-xs font-semibold uppercase tracking-widest text-slate-400">Total Influence Meter</span>
+            <span id="tier-badge" class="px-3 py-1 rounded-full text-xs font-extrabold uppercase bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+              Unranked
+            </span>
+          </div>
+
+          <!-- Big InfScore Display -->
+          <div class="text-center py-4 my-2 rounded-xl bg-slate-900/60 border border-slate-800">
+            <div id="infscore-display" class="text-5xl sm:text-6xl font-black tracking-tight text-white transition-all">
+              0
+            </div>
+            <div class="text-xs font-bold uppercase tracking-wider text-indigo-400 mt-1">
+              InfScore Units
+            </div>
+            <div class="text-[11px] text-slate-500 mt-0.5">
+              Formula: (Total Followers / 100)
+            </div>
+          </div>
+
+          <!-- Total Followers Count -->
+          <div class="grid grid-cols-2 gap-4 mt-4 pt-4 border-t border-slate-800/80">
+            <div>
+              <div class="text-xs text-slate-400 font-medium">Aggregated Reach</div>
+              <div id="total-followers-display" class="text-xl font-bold text-slate-100 mt-0.5">0</div>
+            </div>
+            <div>
+              <div class="text-xs text-slate-400 font-medium">Active Platforms</div>
+              <div id="active-platforms-count" class="text-xl font-bold text-cyan-400 mt-0.5">0 / 10</div>
+            </div>
+          </div>
+
+          <!-- Progress Bar to Next Tier -->
+          <div class="mt-5 space-y-1.5">
+            <div class="flex justify-between text-xs text-slate-400">
+              <span id="tier-current-label">Starter</span>
+              <span id="tier-next-label">Next Tier: 1,000 Score</span>
+            </div>
+            <div class="w-full h-2.5 bg-slate-800 rounded-full overflow-hidden">
+              <div id="tier-progress-bar" class="h-full bg-gradient-to-r from-indigo-500 via-cyan-400 to-pink-500 w-0 transition-all duration-500"></div>
+            </div>
+          </div>
+
+          <!-- Download PDF Button -->
+          <button id="btn-download-pdf" onclick="generatePDFReport()" class="w-full mt-6 py-3.5 px-4 bg-gradient-to-r from-indigo-600 via-indigo-500 to-cyan-500 hover:from-indigo-500 hover:to-cyan-400 text-white font-bold rounded-xl shadow-lg shadow-indigo-500/25 transition-all duration-200 flex items-center justify-center space-x-2 text-sm sm:text-base">
+            <i class="fa-solid fa-file-pdf text-lg"></i>
+            <span>Download Certified PDF Report</span>
+          </button>
+          
+          <div id="validation-msg" class="hidden mt-2 text-xs text-amber-400 text-center font-medium">
+            * Please enter Name, Country and at least one social count to export.
+          </div>
+        </div>
+
+        <!-- Distribution Chart -->
+        <div class="glass-card rounded-2xl p-6">
+          <h3 class="text-sm font-bold text-slate-200 mb-4 flex items-center justify-between">
+            <span>Follower Breakdown</span>
+            <i class="fa-solid fa-chart-pie text-slate-500"></i>
+          </h3>
+          <div class="relative w-full h-52 flex items-center justify-center">
+            <canvas id="followerChart"></canvas>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Footer Section -->
+  <footer class="w-full glass-card border-t border-slate-800 bg-slate-950 mt-auto">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+      <div class="flex flex-col md:flex-row items-center justify-between gap-6">
+        
+        <!-- Brand Info -->
+        <div class="flex items-center space-x-3">
+          <div class="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-bold text-sm">
+            <i class="fa-solid fa-bolt"></i>
+          </div>
+          <span class="text-lg font-bold text-white">InfScore</span>
+          <span class="text-xs text-slate-500 pl-2 border-l border-slate-800">
+            &copy; <span id="year-span">2026</span> InfScore Inc. All rights reserved.
+          </span>
+        </div>
+
+        <!-- Footer Links for Legal Modals -->
+        <div class="flex flex-wrap items-center justify-center gap-6 text-xs text-slate-400">
+          <button onclick="openModal('modal-privacy')" class="hover:text-indigo-400 transition cursor-pointer">
+            Privacy Policy
+          </button>
+          <span class="text-slate-800">•</span>
+          <button onclick="openModal('modal-terms-use')" class="hover:text-indigo-400 transition cursor-pointer">
+            Terms of Use
+          </button>
+          <span class="text-slate-800">•</span>
+          <button onclick="openModal('modal-terms-cond')" class="hover:text-indigo-400 transition cursor-pointer">
+            Terms & Conditions
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </footer>
+
+  <!-- MODALS CONTAINER -->
+  
+  <!-- 1. Privacy Policy Modal -->
+  <div id="modal-privacy" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md">
+    <div class="glass-card bg-slate-900 rounded-2xl max-w-2xl w-full max-h-[85vh] flex flex-col border border-slate-800 shadow-2xl">
+      <div class="p-6 border-b border-slate-800 flex justify-between items-center">
+        <h3 class="text-lg font-bold text-white flex items-center space-x-2">
+          <i class="fa-solid fa-user-shield text-indigo-400"></i>
+          <span>Privacy Policy</span>
+        </h3>
+        <button onclick="closeModal('modal-privacy')" class="text-slate-400 hover:text-white p-2 rounded-lg">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+      <div class="p-6 overflow-y-auto space-y-4 text-xs sm:text-sm text-slate-300 leading-relaxed">
+        <p class="font-medium text-slate-200">Last updated: October 2026</p>
+        <p>At InfScore, we respect your privacy and are committed to protecting your personal data. This privacy policy informs you about how we handle your information when you use our web application.</p>
+        
+        <h4 class="font-bold text-indigo-300 text-sm">1. Local Client-Side Data Processing</h4>
+        <p>InfScore is designed as a privacy-first, client-side web application. All personal details, handles, and follower counts entered into the calculator are processed directly within your browser window. No social media handles or personal metrics are transmitted or stored on external database servers.</p>
+
+        <h4 class="font-bold text-indigo-300 text-sm">2. PDF Document Generation</h4>
+        <p>When generating an InfScore PDF certificate, the document is compiled locally on your browser using client-side JavaScript rendering engines (`jsPDF` and `html2canvas`). The generated PDF is downloaded directly to your device.</p>
+
+        <h4 class="font-bold text-indigo-300 text-sm">3. Local Storage</h4>
+        <p>We do not store persistent tracking cookies. Temporary browser memory is utilized strictly for instant calculations while the application tab is active.</p>
+      </div>
+      <div class="p-4 border-t border-slate-800 flex justify-end">
+        <button onclick="closeModal('modal-privacy')" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-semibold">
+          Understood
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. Terms of Use Modal -->
+  <div id="modal-terms-use" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md">
+    <div class="glass-card bg-slate-900 rounded-2xl max-w-2xl w-full max-h-[85vh] flex flex-col border border-slate-800 shadow-2xl">
+      <div class="p-6 border-b border-slate-800 flex justify-between items-center">
+        <h3 class="text-lg font-bold text-white flex items-center space-x-2">
+          <i class="fa-solid fa-file-contract text-cyan-400"></i>
+          <span>Terms of Use</span>
+        </h3>
+        <button onclick="closeModal('modal-terms-use')" class="text-slate-400 hover:text-white p-2 rounded-lg">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+      <div class="p-6 overflow-y-auto space-y-4 text-xs sm:text-sm text-slate-300 leading-relaxed">
+        <p class="font-medium text-slate-200">Effective Date: October 2026</p>
+        <p>By accessing or using the InfScore online platform, you agree to comply with and be bound by these Terms of Use.</p>
+        
+        <h4 class="font-bold text-cyan-300 text-sm">1. User Verification & Accuracy</h4>
+        <p>Users are responsible for ensuring that all follower and subscriber counts entered reflect truthful and accurate statistics from their official social media profiles. InfScore reports represent self-reported user metrics calculated at the exact time of export.</p>
+
+        <h4 class="font-bold text-cyan-300 text-sm">2. Permitted Use</h4>
+        <p>The generated InfScore certificates may be shared for media kits, brand partnership pitching, influencer rate sheets, or personal digital verification.</p>
+
+        <h4 class="font-bold text-cyan-300 text-sm">3. Intellectual Property</h4>
+        <p>The InfScore formula, branding, badge designs, and PDF layouts are protected property of InfScore Inc.</p>
+      </div>
+      <div class="p-4 border-t border-slate-800 flex justify-end">
+        <button onclick="closeModal('modal-terms-use')" class="px-5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-xs font-semibold">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. Terms & Conditions Modal -->
+  <div id="modal-terms-cond" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md">
+    <div class="glass-card bg-slate-900 rounded-2xl max-w-2xl w-full max-h-[85vh] flex flex-col border border-slate-800 shadow-2xl">
+      <div class="p-6 border-b border-slate-800 flex justify-between items-center">
+        <h3 class="text-lg font-bold text-white flex items-center space-x-2">
+          <i class="fa-solid fa-gavel text-pink-400"></i>
+          <span>Terms & Conditions</span>
+        </h3>
+        <button onclick="closeModal('modal-terms-cond')" class="text-slate-400 hover:text-white p-2 rounded-lg">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+      <div class="p-6 overflow-y-auto space-y-4 text-xs sm:text-sm text-slate-300 leading-relaxed">
+        <p class="font-medium text-slate-200">Standard Terms & Conditions</p>
+
+        <h4 class="font-bold text-pink-300 text-sm">1. Score Calculation Rules</h4>
+        <p>The standard InfScore is calculated using the official mathematical rule: <strong>InfScore = (Total Followers / Subscribers across all 10 supported platforms) × 0.01</strong>. Alternative third-party score weighting rules are not binding upon the official InfScore standard.</p>
+
+        <h4 class="font-bold text-pink-300 text-sm">2. Limitation of Liability</h4>
+        <p>InfScore Inc. provides this tool "as is". We are not liable for business contracts, sponsorship outcomes, or third-party decisions made based on self-reported InfScore reports.</p>
+
+        <h4 class="font-bold text-pink-300 text-sm">3. Modifications</h4>
+        <p>We reserve the right to update the platform, scoring tiers, or legal terms at any time without prior notice.</p>
+      </div>
+      <div class="p-4 border-t border-slate-800 flex justify-end">
+        <button onclick="closeModal('modal-terms-cond')" class="px-5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-xs font-semibold">
+          I Accept
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hidden Off-screen Certificate Container for High Quality PDF Render -->
+  <div class="fixed top-[-9999px] left-[-9999px] pointer-events-none">
+    <div id="pdf-certificate" class="w-[800px] p-10 bg-slate-900 text-white font-sans border-4 border-indigo-500/50 rounded-xl">
+      <!-- Certificate Header -->
+      <div class="flex items-center justify-between border-b-2 border-indigo-500/30 pb-6 mb-6">
+        <div class="flex items-center space-x-3">
+          <div class="w-12 h-12 rounded-xl bg-indigo-600 flex items-center justify-center text-white text-2xl font-black">
+            <i class="fa-solid fa-bolt"></i>
+          </div>
+          <div>
+            <h1 class="text-3xl font-black tracking-tight text-white">InfScore</h1>
+            <p class="text-xs text-indigo-400 font-semibold tracking-widest uppercase">Verified Influence Certificate</p>
+          </div>
+        </div>
+        <div class="text-right">
+          <div class="text-xs text-slate-400">Issue Date</div>
+          <div id="pdf-date" class="text-sm font-bold text-slate-200">--</div>
+        </div>
+      </div>
+
+      <!-- User Info Box -->
+      <div class="grid grid-cols-2 gap-4 bg-slate-800/80 p-4 rounded-xl border border-slate-700 mb-6">
+        <div>
+          <span class="text-xs text-slate-400 block uppercase font-medium">Creator Name</span>
+          <span id="pdf-user-name" class="text-lg font-bold text-indigo-300">Alex Morgan</span>
+        </div>
+        <div>
+          <span class="text-xs text-slate-400 block uppercase font-medium">Country of Origin</span>
+          <span id="pdf-user-country" class="text-lg font-bold text-indigo-300">United States</span>
+        </div>
+      </div>
+
+      <!-- Table Breakdown -->
+      <div class="mb-6">
+        <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">Platform Breakdown</h3>
+        <table class="w-full text-left border-collapse text-xs">
+          <thead>
+            <tr class="bg-slate-800 text-slate-300 border-b border-slate-700">
+              <th class="py-2.5 px-3 font-semibold">Platform</th>
+              <th class="py-2.5 px-3 font-semibold">Username / Handle</th>
+              <th class="py-2.5 px-3 font-semibold text-right">Followers / Subs</th>
+            </tr>
+          </thead>
+          <tbody id="pdf-table-body" class="divide-y divide-slate-800 text-slate-200">
+            <!-- Dynamic rows inserted via JS -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Result Summary Box -->
+      <div class="bg-gradient-to-r from-indigo-900/50 via-slate-800 to-indigo-900/50 p-6 rounded-xl border border-indigo-500/40 flex items-center justify-between">
+        <div>
+          <div class="text-xs text-slate-400 uppercase font-semibold">Aggregated Followers</div>
+          <div id="pdf-total-followers" class="text-2xl font-black text-white">0</div>
+        </div>
+        <div class="text-center px-4 py-2 bg-indigo-600/30 border border-indigo-500/50 rounded-lg">
+          <div class="text-[10px] text-indigo-300 uppercase font-extrabold tracking-widest">Official Tier</div>
+          <div id="pdf-tier-badge" class="text-base font-extrabold text-cyan-300">Nano-Influencer</div>
+        </div>
+        <div class="text-right">
+          <div class="text-xs text-slate-400 uppercase font-semibold">Calculated InfScore</div>
+          <div id="pdf-infscore" class="text-3xl font-black text-indigo-400">0</div>
+        </div>
+      </div>
+
+      <!-- Certificate Footer & Stamp -->
+      <div class="mt-8 pt-4 border-t border-slate-800 flex items-center justify-between text-[10px] text-slate-500">
+        <div>Official client-side verification hash: <span id="pdf-hash" class="font-mono text-slate-400">INF-849302-VERIFIED</span></div>
+        <div class="flex items-center space-x-1 text-indigo-400 font-bold">
+          <i class="fa-solid fa-shield-halved"></i>
+          <span>InfScore Official Standard</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* Platforms Config Data */
+    const PLATFORMS = [
+      { id: 'instagram', name: 'Instagram', icon: 'fa-brands fa-instagram', color: '#E1306C', placeholder: '@username' },
+      { id: 'youtube', name: 'YouTube', icon: 'fa-brands fa-youtube', color: '#FF0000', placeholder: '@channel' },
+      { id: 'tiktok', name: 'TikTok', icon: 'fa-brands fa-tiktok', color: '#00F2FE', placeholder: '@handle' },
+      { id: 'x', name: 'X (Twitter)', icon: 'fa-brands fa-x-twitter', color: '#1DA1F2', placeholder: '@username' },
+      { id: 'facebook', name: 'Facebook', icon: 'fa-brands fa-facebook', color: '#1877F2', placeholder: 'page.username' },
+      { id: 'linkedin', name: 'LinkedIn', icon: 'fa-brands fa-linkedin', color: '#0A66C2', placeholder: 'in/username' },
+      { id: 'pinterest', name: 'Pinterest', icon: 'fa-brands fa-pinterest', color: '#E60023', placeholder: '@username' },
+      { id: 'twitch', name: 'Twitch', icon: 'fa-brands fa-twitch', color: '#9146FF', placeholder: 'channel_name' },
+      { id: 'threads', name: 'Threads', icon: 'fa-brands fa-threads', color: '#FFFFFF', placeholder: '@username' },
+      { id: 'reddit', name: 'Reddit', icon: 'fa-brands fa-reddit', color: '#FF4500', placeholder: 'u/username' },
+    ];
+
+    /* Influence Tiers Definitions */
+    const TIERS = [
+      { name: 'Starter', minScore: 0, maxScore: 100 },
+      { name: 'Nano-Influencer', minScore: 100, maxScore: 500 },
+      { name: 'Micro-Influencer', minScore: 500, maxScore: 1000 },
+      { name: 'Mid-Tier Influencer', minScore: 1000, maxScore: 5000 },
+      { name: 'Macro-Influencer', minScore: 5000, maxScore: 10000 },
+      { name: 'Elite Influencer', minScore: 10000, maxScore: 50000 },
+      { name: 'Digital Legend', minScore: 50000, maxScore: Infinity }
+    ];
+
+    let followerChart = null;
+
+    /* Initialize Application on DOM Load */
+    window.addEventListener('DOMContentLoaded', () => {
+      renderPlatformFields();
+      initChart();
+      calculateInfScore();
+      document.getElementById('year-span').textContent = new Date().getFullYear();
+    });
+
+    /* Render Social Media Input Fields */
+    function renderPlatformFields() {
+      const container = document.getElementById('platforms-container');
+      container.innerHTML = '';
+
+      PLATFORMS.forEach((p) => {
+        const item = document.createElement('div');
+        item.className = 'glass-card-hover rounded-xl p-3.5 bg-slate-900/50 border border-slate-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3';
+        
+        item.innerHTML = `
+          <!-- Platform Title & Icon -->
+          <div class="flex items-center space-x-3 w-full sm:w-1/3">
+            <div class="w-9 h-9 rounded-lg flex items-center justify-center text-white text-base shadow-sm" style="background-color: ${p.color}20; color: ${p.color}; border: 1px solid ${p.color}40">
+              <i class="${p.icon}"></i>
+            </div>
+            <span class="font-semibold text-sm text-slate-200">${p.name}</span>
+          </div>
+
+          <!-- Handle & Follower Count Inputs -->
+          <div class="grid grid-cols-2 gap-2 w-full sm:w-2/3">
+            <input type="text" id="handle-${p.id}" placeholder="${p.placeholder}" oninput="calculateInfScore()" class="px-3 py-1.5 bg-slate-950/80 border border-slate-700/60 rounded-lg text-slate-200 placeholder-slate-600 focus:outline-none focus:ring-1 focus:ring-indigo-500 text-xs">
+            <input type="number" id="count-${p.id}" min="0" placeholder="Followers / Subs" oninput="calculateInfScore()" class="px-3 py-1.5 bg-slate-950/80 border border-slate-700/60 rounded-lg text-slate-200 placeholder-slate-600 focus:outline-none focus:ring-1 focus:ring-indigo-500 text-xs font-mono">
+          </div>
+        `;
+
+        container.appendChild(item);
+      });
+    }
+
+    /* Real-Time Calculation Logic */
+    function calculateInfScore() {
+      let totalFollowers = 0;
+      let activePlatforms = 0;
+      const chartLabels = [];
+      const chartData = [];
+      const chartColors = [];
+
+      PLATFORMS.forEach(p => {
+        const countInput = document.getElementById(`count-${p.id}`);
+        const count = parseInt(countInput.value) || 0;
+
+        if (count > 0) {
+          totalFollowers += count;
+          activePlatforms++;
+          chartLabels.push(p.name);
+          chartData.push(count);
+          chartColors.push(p.color);
+        }
+      });
+
+      /* InfScore = 1% of Total Followers (Total / 100) */
+      const infScore = Math.floor(totalFollowers * 0.01);
+
+      /* Update DOM Metrics */
+      document.getElementById('infscore-display').textContent = infScore.toLocaleString();
+      document.getElementById('total-followers-display').textContent = totalFollowers.toLocaleString();
+      document.getElementById('active-platforms-count').textContent = `${activePlatforms} / 10`;
+
+      /* Determine Tier */
+      const currentTier = getTier(infScore);
+      const tierBadge = document.getElementById('tier-badge');
+      tierBadge.textContent = currentTier.name;
+
+      /* Update Progress Bar */
+      updateProgressBar(infScore, currentTier);
+
+      /* Update Chart */
+      updateChart(chartLabels, chartData, chartColors);
+    }
+
+    /* Helper: Find Tier Object */
+    function getTier(score) {
+      for (let i = TIERS.length - 1; i >= 0; i--) {
+        if (score >= TIERS[i].minScore) {
+          return TIERS[i];
+        }
+      }
+      return TIERS[0];
+    }
+
+    /* Helper: Update Tier Progress Bar */
+    function updateProgressBar(score, tier) {
+      const currentLabel = document.getElementById('tier-current-label');
+      const nextLabel = document.getElementById('tier-next-label');
+      const progressBar = document.getElementById('tier-progress-bar');
+
+      currentLabel.textContent = tier.name;
+
+      if (tier.maxScore === Infinity) {
+        nextLabel.textContent = 'Maximum Rank Achieved!';
+        progressBar.style.width = '100%';
+      } else {
+        const span = tier.maxScore - tier.minScore;
+        const progress = Math.min(100, Math.max(0, ((score - tier.minScore) / span) * 100));
+        nextLabel.textContent = `Next Tier: ${tier.maxScore.toLocaleString()} Score`;
+        progressBar.style.width = `${progress}%`;
+      }
+    }
+
+    /* Initialize Chart.js Donut Visualizer */
+    function initChart() {
+      const ctx = document.getElementById('followerChart').getContext('2d');
+      followerChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: ['No Data'],
+          datasets: [{
+            data: [1],
+            backgroundColor: ['#334155'],
+            borderWidth: 0,
+            hoverOffset: 4
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              display: false
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  const val = context.raw || 0;
+                  return ` ${context.label}: ${val.toLocaleString()}`;
+                }
+              }
+            }
+          },
+          cutout: '70%'
+        }
+      });
+    }
+
+    /* Update Chart.js Data */
+    function updateChart(labels, data, colors) {
+      if (!followerChart) return;
+
+      if (data.length === 0) {
+        followerChart.data.labels = ['No Data'];
+        followerChart.data.datasets[0].data = [1];
+        followerChart.data.datasets[0].backgroundColor = ['#334155'];
+      } else {
+        followerChart.data.labels = labels;
+        followerChart.data.datasets[0].data = data;
+        followerChart.data.datasets[0].backgroundColor = colors;
+      }
+      followerChart.update();
+    }
+
+    /* Preset Demo Data */
+    function loadSampleData() {
+      document.getElementById('user-name').value = 'Alex Morgan';
+      document.getElementById('user-country').value = 'United States';
+      document.getElementById('user-email').value = 'alex.morgan@creator.io';
+
+      const sampleCounts = {
+        instagram: { handle: '@alex.morgan', count: 45000 },
+        youtube: { handle: '@AlexMorganVlogs', count: 120000 },
+        tiktok: { handle: '@alexmorgan_official', count: 85000 },
+        x: { handle: '@alexm_tweets', count: 15000 },
+        threads: { handle: '@alex.morgan', count: 8000 },
+        twitch: { handle: 'alexlive', count: 12000 }
+      };
+
+      PLATFORMS.forEach(p => {
+        const handleInput = document.getElementById(`handle-${p.id}`);
+        const countInput = document.getElementById(`count-${p.id}`);
+
+        if (sampleCounts[p.id]) {
+          handleInput.value = sampleCounts[p.id].handle;
+          countInput.value = sampleCounts[p.id].count;
+        } else {
+          handleInput.value = '';
+          countInput.value = '';
+        }
+      });
+
+      calculateInfScore();
+    }
+
+    /* Reset All Input Fields */
+    function resetAllInputs() {
+      document.getElementById('user-name').value = '';
+      document.getElementById('user-country').value = '';
+      document.getElementById('user-email').value = '';
+
+      PLATFORMS.forEach(p => {
+        document.getElementById(`handle-${p.id}`).value = '';
+        document.getElementById(`count-${p.id}`).value = '';
+      });
+
+      calculateInfScore();
+    }
+
+    /* PDF Generation Function */
+    async function generatePDFReport() {
+      const name = document.getElementById('user-name').value.trim();
+      const country = document.getElementById('user-country').value;
+      const validationMsg = document.getElementById('validation-msg');
+
+      if (!name || !country) {
+        validationMsg.classList.remove('hidden');
+        setTimeout(() => validationMsg.classList.add('hidden'), 4000);
+        alert('Please fill in your Name and Country before generating the PDF report.');
+        return;
+      }
+
+      const btn = document.getElementById('btn-download-pdf');
+      const originalText = btn.innerHTML;
+      btn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> <span>Compiling PDF...</span>`;
+      btn.disabled = true;
+
+      try {
+        // Populate Hidden Certificate DOM
+        document.getElementById('pdf-user-name').textContent = name;
+        document.getElementById('pdf-user-country').textContent = country;
+        document.getElementById('pdf-date').textContent = new Date().toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric'
+        });
+
+        // Build Table
+        const tbody = document.getElementById('pdf-table-body');
+        tbody.innerHTML = '';
+
+        let totalFollowers = 0;
+
+        PLATFORMS.forEach(p => {
+          const handle = document.getElementById(`handle-${p.id}`).value.trim() || '-';
+          const countVal = parseInt(document.getElementById(`count-${p.id}`).value) || 0;
+          
+          if (countVal > 0 || handle !== '-') {
+            totalFollowers += countVal;
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+              <td class="py-2 px-3 font-medium">${p.name}</td>
+              <td class="py-2 px-3 font-mono text-indigo-300">${handle}</td>
+              <td class="py-2 px-3 text-right font-mono">${countVal.toLocaleString()}</td>
+            `;
+            tbody.appendChild(tr);
+          }
+        });
+
+        if (tbody.children.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="3" class="py-4 text-center text-slate-500">No active platform accounts entered.</td></tr>`;
+        }
+
+        const finalScore = Math.floor(totalFollowers * 0.01);
+        const currentTier = getTier(finalScore);
+
+        document.getElementById('pdf-total-followers').textContent = totalFollowers.toLocaleString();
+        document.getElementById('pdf-infscore').textContent = finalScore.toLocaleString();
+        document.getElementById('pdf-tier-badge').textContent = currentTier.name;
+        document.getElementById('pdf-hash').textContent = `INF-${Math.floor(100000 + Math.random() * 900000)}-VERIFIED`;
+
+        // Render PDF using html2canvas & jsPDF
+        const certElement = document.getElementById('pdf-certificate');
+        const canvas = await html2canvas(certElement, {
+          scale: 2,
+          useCORS: true,
+          backgroundColor: '#0f172a'
+        });
+
+        const imgData = canvas.toDataURL('image/png');
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF({
+          orientation: 'p',
+          unit: 'px',
+          format: [canvas.width, canvas.height]
+        });
+
+        pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+        pdf.save(`InfScore_Report_${name.replace(/\s+/g, '_')}.pdf`);
+
+      } catch (err) {
+        console.error('PDF Generation Error:', err);
+        alert('An error occurred while compiling your PDF. Please try again.');
+      } finally {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+      }
+    }
+
+    /* Modal Utility Functions */
+    function openModal(modalId) {
+      const modal = document.getElementById(modalId);
+      if (modal) {
+        modal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+      }
+    }
+
+    function closeModal(modalId) {
+      const modal = document.getElementById(modalId);
+      if (modal) {
+        modal.classList.add('hidden');
+        document.body.style.overflow = 'auto';
+      }
+    }
+  </script>
+</body>
+</html>
